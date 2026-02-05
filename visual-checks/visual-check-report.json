@@ -1,0 +1,38 @@
+[
+  {
+    "url": "http://localhost:3000/",
+    "name": "home",
+    "status": 200,
+    "title": "오늘의마사지 - 전국 마사지/스파 통합 예약",
+    "errors": null,
+    "screenshot": "C:\\a\\visual-checks\\home.png",
+    "success": true
+  },
+  {
+    "url": "http://localhost:3000/privacy",
+    "name": "privacy",
+    "status": 200,
+    "title": "개인정보처리방침 | 오늘의마사지 | 오늘의마사지",
+    "errors": null,
+    "screenshot": "C:\\a\\visual-checks\\privacy.png",
+    "success": true
+  },
+  {
+    "url": "http://localhost:3000/terms",
+    "name": "terms",
+    "status": 200,
+    "title": "이용약관 | 오늘의마사지 | 오늘의마사지",
+    "errors": null,
+    "screenshot": "C:\\a\\visual-checks\\terms.png",
+    "success": true
+  },
+  {
+    "url": "http://localhost:3000/admin/blacklist",
+    "name": "admin-blacklist",
+    "status": 200,
+    "title": "로그인 | 오늘의마사지 | 오늘의마사지",
+    "errors": null,
+    "screenshot": "C:\\a\\visual-checks\\admin-blacklist.png",
+    "success": true
+  }
+]

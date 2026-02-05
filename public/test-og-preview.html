@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG Image Preview Test - 오늘의마사지</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+    }
+
+    .preview-grid {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .preview-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-card h2 {
+      margin-bottom: 1rem;
+      color: #1f2937;
+      font-size: 1.5rem;
+    }
+
+    .preview-card p {
+      color: #6b7280;
+      margin-bottom: 1rem;
+      line-height: 1.6;
+    }
+
+    .og-image-container {
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f9fafb;
+    }
+
+    .og-image-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .metadata-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .metadata-item {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: #f9fafb;
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+
+    .metadata-item strong {
+      color: #374151;
+    }
+
+    .metadata-item span {
+      color: #6b7280;
+      word-break: break-all;
+    }
+
+    .dimensions {
+      display: inline-block;
+      background: #ec4899;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .test-links {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .test-link {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: #eff6ff;
+      border: 2px solid #3b82f6;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #1e40af;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .test-link:hover {
+      background: #dbeafe;
+      transform: translateY(-2px);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: #10b981;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .instructions {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .instructions h3 {
+      color: #92400e;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .instructions ul {
+      margin-left: 1.5rem;
+      color: #78350f;
+    }
+
+    .instructions li {
+      margin-bottom: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .metadata-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 오늘의마사지 - OG Image & Metadata Preview</h1>
+
+    <div class="preview-grid">
+      <!-- Instructions -->
+      <div class="preview-card">
+        <div class="instructions">
+          <h3>📋 사용 방법</h3>
+          <ul>
+            <li>로컬 개발 서버가 실행 중이어야 합니다 (npm run dev)</li>
+            <li>아래 링크로 실제 메타데이터를 확인할 수 있습니다</li>
+            <li>소셜 미디어 공유 시 이렇게 보입니다</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- OG Image Preview -->
+      <div class="preview-card">
+        <h2>Open Graph Image Preview</h2>
+        <p>
+          <span class="dimensions">1200 × 630</span>
+          소셜 미디어 공유 시 표시되는 이미지
+        </p>
+        <div class="og-image-container">
+          <img
+            src="http://localhost:3000/opengraph-image"
+            alt="오늘의마사지 OG Image"
+            onerror="this.parentElement.innerHTML='<p style=\'padding: 2rem; text-align: center; color: #ef4444;\'>❌ 이미지를 불러올 수 없습니다. 개발 서버가 실행 중인지 확인하세요.</p>'"
+          >
+        </div>
+      </div>
+
+      <!-- Metadata Preview -->
+      <div class="preview-card">
+        <h2>Metadata Configuration</h2>
+        <p>현재 설정된 메타데이터 정보</p>
+
+        <div class="metadata-grid">
+          <div class="metadata-item">
+            <strong>Title Template:</strong>
+            <span>%s | 오늘의마사지</span>
+          </div>
+          <div class="metadata-item">
+            <strong>Default Title:</strong>
+            <span>오늘의마사지 - 전국 마사지/스파 통합 예약</span>
+          </div>
+          <div class="metadata-item">
+            <strong>Description:</strong>
+            <span>전국 마사지샵, 스파, 태국마사지, 스웨디시를 한곳에서 비교하고 예약하세요. 실시간 예약, 리뷰 확인, 할인 혜택까지 오늘의마사지에서 간편하게.</span>
+          </div>
+          <div class="metadata-item">
+            <strong>Theme Color:</strong>
+            <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
+              <span style="display: inline-block; width: 20px; height: 20px; background: #ec4899; border-radius: 4px; border: 1px solid #ccc;"></span>
+              #ec4899 (pink-500)
+            </span>
+          </div>
+          <div class="metadata-item">
+            <strong>Locale:</strong>
+            <span>ko_KR (Korean)</span>
+          </div>
+          <div class="metadata-item">
+            <strong>OG Image Size:</strong>
+            <span>1200×630 (optimal for all platforms)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Preview Simulators -->
+      <div class="preview-card">
+        <h2>Social Media Preview</h2>
+        <p>각 플랫폼에서 어떻게 보이는지 시뮬레이션</p>
+
+        <!-- Facebook Preview -->
+        <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <div style="width: 40px; height: 40px; background: #1877f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">f</div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.875rem;">오늘의마사지</div>
+              <div style="color: #65676b; font-size: 0.75rem;">방금 전</div>
+            </div>
+          </div>
+          <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+            <img src="http://localhost:3000/opengraph-image" style="width: 100%; display: block;">
+            <div style="padding: 0.75rem; background: white;">
+              <div style="color: #65676b; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.25rem;">TODAYMASSAGE.COM</div>
+              <div style="font-weight: 600; margin-bottom: 0.25rem;">오늘의마사지 - 전국 마사지/스파 통합 예약</div>
+              <div style="color: #65676b; font-size: 0.875rem;">전국 마사지샵, 스파, 태국마사지, 스웨디시를 한곳에서 비교하고 예약하세요.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Twitter Preview -->
+        <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;">
+          <div style="display: flex; gap: 0.75rem;">
+            <div style="width: 48px; height: 48px; background: #1da1f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0;">𝕏</div>
+            <div style="flex: 1;">
+              <div style="margin-bottom: 0.5rem;">
+                <span style="font-weight: 700;">오늘의마사지</span>
+                <span style="color: #536471; margin-left: 0.25rem;">@todaymassage · 방금</span>
+              </div>
+              <div style="margin-bottom: 0.5rem;">전국 마사지샵을 한눈에! 🎉</div>
+              <div style="border: 1px solid #cfd9de; border-radius: 16px; overflow: hidden;">
+                <img src="http://localhost:3000/opengraph-image" style="width: 100%; display: block;">
+                <div style="padding: 0.75rem;">
+                  <div style="font-size: 0.9375rem; font-weight: 400; margin-bottom: 0.125rem;">오늘의마사지 - 전국 마사지/스파 통합 예약</div>
+                  <div style="color: #536471; font-size: 0.9375rem;">전국 마사지샵, 스파, 태국마사지, 스웨디시를 한곳에서 비교하고 예약하세요.</div>
+                  <div style="color: #536471; font-size: 0.9375rem; margin-top: 0.125rem;">🔗 todaymassage.com</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Links -->
+      <div class="preview-card">
+        <h2>Testing Tools</h2>
+        <p>외부 도구로 실제 공유 미리보기 테스트 (배포 후)</p>
+
+        <div class="test-links">
+          <a href="https://developers.facebook.com/tools/debug/" target="_blank" class="test-link">
+            <span>📘</span>
+            <span>Facebook Sharing Debugger</span>
+            <span class="badge">External</span>
+          </a>
+
+          <a href="https://cards-dev.twitter.com/validator" target="_blank" class="test-link">
+            <span>🐦</span>
+            <span>Twitter Card Validator</span>
+            <span class="badge">External</span>
+          </a>
+
+          <a href="https://www.linkedin.com/post-inspector/" target="_blank" class="test-link">
+            <span>💼</span>
+            <span>LinkedIn Post Inspector</span>
+            <span class="badge">External</span>
+          </a>
+
+          <a href="http://localhost:3000/sitemap.xml" target="_blank" class="test-link">
+            <span>🗺️</span>
+            <span>Sitemap (Local)</span>
+          </a>
+
+          <a href="http://localhost:3000/robots.txt" target="_blank" class="test-link">
+            <span>🤖</span>
+            <span>Robots.txt (Local)</span>
+          </a>
+
+          <a href="http://localhost:3000/manifest.json" target="_blank" class="test-link">
+            <span>📱</span>
+            <span>PWA Manifest (Local)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Status Check -->
+      <div class="preview-card">
+        <h2>Setup Status</h2>
+        <div class="metadata-grid">
+          <div class="metadata-item">
+            <strong>Core Setup:</strong>
+            <span style="color: #10b981;">✅ 100% Complete</span>
+          </div>
+          <div class="metadata-item">
+            <strong>Icon Files:</strong>
+            <span style="color: #f59e0b;">⚠️ Pending (Generate icons)</span>
+          </div>
+          <div class="metadata-item">
+            <strong>Base URL:</strong>
+            <span>http://localhost:3000 (Update for production)</span>
+          </div>
+          <div class="metadata-item">
+            <strong>Next Step:</strong>
+            <span>Generate icon files using realfavicongenerator.net</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem; color: white; opacity: 0.8; font-size: 0.875rem;">
+      <p>오늘의마사지 SEO & PWA Setup Test Page</p>
+      <p style="margin-top: 0.5rem;">See QUICK-REFERENCE-SEO-PWA.md for more details</p>
+    </div>
+  </div>
+
+  <script>
+    // Auto-refresh image every 5 seconds (helpful during development)
+    setInterval(() => {
+      const images = document.querySelectorAll('img[src*="opengraph-image"]');
+      images.forEach(img => {
+        const src = img.src.split('?')[0];
+        img.src = src + '?t=' + new Date().getTime();
+      });
+    }, 5000);
+
+    console.log('🎨 OG Image Preview Test Page Loaded');
+    console.log('📊 Images will auto-refresh every 5 seconds');
+  </script>
+</body>
+</html>
