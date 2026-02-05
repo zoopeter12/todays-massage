@@ -165,35 +165,17 @@ jobs:
       - name: Install Dependencies
         run: npm ci
         
-      - name: Build Static Export
+      - name: Build for Capacitor (Hybrid Mode)
         run: |
-          echo "Building with Next.js static export..."
-          # Skip prebuild script and run next build directly
-          npx next build
+          echo "Building Capacitor hybrid app (WebView wrapper)..."
+          chmod +x scripts/build-for-capacitor.sh
+          ./scripts/build-for-capacitor.sh https://todays-massage.vercel.app
           
-          # Check if out directory was created
-          if [ -d "out" ]; then
-            echo "✅ Static export successful - out directory created"
-            ls -la out | head -20
-          else
-            echo "❌ out directory not found!"
-            echo "Checking for .next directory..."
-            ls -la
-            exit 1
-          fi
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
-          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
-          NEXT_PUBLIC_NAVER_MAP_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID }}
-          NEXT_PUBLIC_PORTONE_STORE_ID: ${{ secrets.NEXT_PUBLIC_PORTONE_STORE_ID }}
-          NEXT_PUBLIC_PORTONE_CHANNEL_KEY: ${{ secrets.NEXT_PUBLIC_PORTONE_CHANNEL_KEY }}
-          NEXT_PUBLIC_BASE_URL: https://todays-massage.vercel.app
+          echo "✅ Hybrid build complete"
+          ls -la out | head -20
+          
+          echo "Capacitor config:"
+          cat capacitor.config.ts
           
       - name: Add Capacitor Android
         run: |
