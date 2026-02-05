@@ -4,7 +4,7 @@
  * @module lib/twilio
  */
 
-export { twilioClient, getVerifyService, verifyServiceSid } from './client';
+export { getTwilioClient, getVerifyService, verifyServiceSid } from './client';
 export {
   isValidKoreanPhone,
   formatPhoneNumber,
