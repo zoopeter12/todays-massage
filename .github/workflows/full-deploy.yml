@@ -1,0 +1,241 @@
+name: 🚀 Full Deployment Pipeline (Vercel + PWA + Android)
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:  # 수동 트리거 가능
+
+env:
+  PROJECT_NAME: todays-massage
+  APP_ID: com.todaysmassage.app
+
+jobs:
+  # ============================================
+  # 1단계: Vercel 배포
+  # ============================================
+  deploy-vercel:
+    name: 📦 Deploy to Vercel
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+        
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Build Project
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "✅ Deployed to: $URL"
+
+  # ============================================
+  # 2단계: PWA 검증
+  # ============================================
+  validate-pwa:
+    name: 🔍 Validate PWA
+    runs-on: ubuntu-latest
+    needs: deploy-vercel
+    steps:
+      - name: Check PWA Manifest
+        run: |
+          MANIFEST_URL="${{ needs.deploy-vercel.outputs.deploy_url }}/manifest.json"
+          echo "Checking: $MANIFEST_URL"
+          
+          # manifest.json 확인
+          curl -sSf "$MANIFEST_URL" | jq .
+          
+          # Service Worker 확인
+          SW_URL="${{ needs.deploy-vercel.outputs.deploy_url }}/firebase-messaging-sw.js"
+          curl -sSf "$SW_URL" > /dev/null && echo "✅ Service Worker exists"
+
+  # ============================================
+  # 3단계: PWABuilder로 Android 앱 생성
+  # ============================================
+  build-android:
+    name: 🤖 Build Android APK/AAB
+    runs-on: ubuntu-latest
+    needs: [deploy-vercel, validate-pwa]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate Android via PWABuilder API
+        id: pwabuilder
+        run: |
+          DEPLOY_URL="${{ needs.deploy-vercel.outputs.deploy_url }}"
+          echo "Building Android app for: $DEPLOY_URL"
+          
+          # PWABuilder API 호출
+          RESPONSE=$(curl -X POST "https://pwabuilder-api-prod.azurewebsites.net/api/android" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "siteUrl": "'"$DEPLOY_URL"'",
+              "packageId": "com.todaysmassage.app",
+              "appName": "오늘의마사지",
+              "appShortName": "오마",
+              "versionCode": 1,
+              "versionName": "1.0.0",
+              "display": "standalone",
+              "iconUrl": "'"$DEPLOY_URL"'/icons/icon-512.png",
+              "maskableIconUrl": "'"$DEPLOY_URL"'/icons/icon-maskable-512.png",
+              "splashFadeOutDuration": 300,
+              "enableNotifications": true,
+              "enableSiteSettingsShortcut": true,
+              "isChromeOSOnly": false,
+              "includeSourceCode": true,
+              "signingMode": "none"
+            }')
+          
+          echo "Response: $RESPONSE"
+          DOWNLOAD_URL=$(echo $RESPONSE | jq -r '.downloadUrl // empty')
+          
+          if [ -n "$DOWNLOAD_URL" ]; then
+            echo "download_url=$DOWNLOAD_URL" >> $GITHUB_OUTPUT
+            echo "✅ APK generated: $DOWNLOAD_URL"
+          else
+            echo "⚠️ PWABuilder API returned no download URL. Trying alternative method..."
+          fi
+          
+      - name: Download and Extract APK
+        if: steps.pwabuilder.outputs.download_url != ''
+        run: |
+          curl -L "${{ steps.pwabuilder.outputs.download_url }}" -o android-package.zip
+          unzip android-package.zip -d android-build
+          ls -la android-build/
+          
+      - name: Upload APK Artifact
+        if: steps.pwabuilder.outputs.download_url != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: android-build/
+          retention-days: 30
+
+  # ============================================
+  # 4단계: Capacitor Android 빌드 (대안)
+  # ============================================
+  build-capacitor-android:
+    name: 🔧 Capacitor Android Build
+    runs-on: ubuntu-latest
+    needs: deploy-vercel
+    if: always()  # PWABuilder 실패해도 실행
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Update next.config for static export
+        run: |
+          cat > next.config.ts << 'EOF'
+          import type { NextConfig } from 'next';
+
+          const nextConfig: NextConfig = {
+            output: 'export',
+            images: {
+              unoptimized: true,
+            },
+            trailingSlash: true,
+          };
+
+          export default nextConfig;
+          EOF
+          
+      - name: Build Static Export
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          
+      - name: Add Capacitor Android
+        run: |
+          npx cap add android || true
+          npx cap sync android
+          
+      - name: Build APK
+        run: |
+          cd android
+          ./gradlew assembleRelease
+          
+      - name: Upload Capacitor APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: capacitor-apk
+          path: android/app/build/outputs/apk/release/
+          retention-days: 30
+
+  # ============================================
+  # 5단계: Google Play 업로드 (선택적)
+  # ============================================
+  upload-play-store:
+    name: 📱 Upload to Play Store
+    runs-on: ubuntu-latest
+    needs: [build-android, build-capacitor-android]
+    if: github.event_name == 'workflow_dispatch'  # 수동 트리거시에만
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: ./apk
+          
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          packageName: com.todaysmassage.app
+          releaseFiles: ./apk/*.aab
+          track: internal  # internal → alpha → beta → production
+          status: draft
+
+  # ============================================
+  # 완료 알림
+  # ============================================
+  notify:
+    name: 📬 Send Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-vercel, build-android]
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Vercel | ${{ needs.deploy-vercel.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Android Build | ${{ needs.build-android.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Deploy URL:** ${{ needs.deploy-vercel.outputs.deploy_url }}" >> $GITHUB_STEP_SUMMARY
