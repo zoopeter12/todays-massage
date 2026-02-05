@@ -1,23 +1,11 @@
-import type { NextConfig } from 'next';
+﻿import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Reverted: Remove static export, use standard Next.js build
-  // output: 'export', 
+  output: 'export',
   images: {
-    // unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
+    unoptimized: true,
   },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
+  trailingSlash: true,
 };
 
 export default nextConfig;
