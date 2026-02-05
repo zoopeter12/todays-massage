@@ -1,19 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variable validation - fail fast if missing
-const PORTONE_API_SECRET = process.env.PORTONE_API_SECRET;
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Lazy environment variable getters (avoid build-time errors)
+function getPortOneApiSecret(): string {
+  const secret = process.env.PORTONE_API_SECRET;
+  if (!secret) {
+    throw new Error('PORTONE_API_SECRET environment variable is required');
+  }
+  return secret;
+}
 
-if (!PORTONE_API_SECRET) {
-  throw new Error('PORTONE_API_SECRET environment variable is required');
+function getSupabaseUrl(): string {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is required');
+  }
+  return url;
 }
-if (!SUPABASE_URL) {
-  throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is required');
-}
-if (!SUPABASE_SERVICE_KEY) {
-  throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
+
+function getSupabaseServiceKey(): string {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required');
+  }
+  return key;
 }
 
 /**
@@ -33,7 +43,7 @@ async function validateAuthentication(request: NextRequest): Promise<string | nu
     const token = authHeader.substring(7);
 
     // Validate token with Supabase
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+    const supabase = createClient(getSupabaseUrl(), getSupabaseServiceKey());
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
@@ -53,7 +63,7 @@ async function validateReservationOwnership(
   userId: string,
   reservationId: string
 ): Promise<boolean> {
-  const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+  const supabase = createClient(getSupabaseUrl(), getSupabaseServiceKey());
 
   const { data, error } = await supabase
     .from('reservations')
@@ -104,7 +114,7 @@ export async function POST(request: NextRequest) {
       `https://api.portone.io/payments/${encodeURIComponent(paymentId)}`,
       {
         headers: {
-          Authorization: `PortOne ${PORTONE_API_SECRET}`,
+          Authorization: `PortOne ${getPortOneApiSecret()}`,
         },
       }
     );
@@ -137,7 +147,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Update reservation status in Supabase
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_KEY!);
+    const supabase = createClient(getSupabaseUrl(), getSupabaseServiceKey());
 
     const { error: updateError } = await supabase
       .from('reservations')
